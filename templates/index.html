@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <title>Skin Disease Predictor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-rose-100 to-teal-100 min-h-screen flex items-center justify-center font-sans">
+  <div class="w-full max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-xl">
+    <h1 class="text-3xl font-bold text-center text-rose-600 mb-6">Skin Disease Prediction</h1>
+
+    <!-- Login Form -->
+    <div id="login-form">
+      <h2 class="text-xl font-semibold text-teal-700 mb-2">Login</h2>
+      <input id="login-username" type="text" placeholder="Username" class="w-full mb-2 px-3 py-2 border rounded-xl" />
+      <input id="login-password" type="password" placeholder="Password" class="w-full mb-4 px-3 py-2 border rounded-xl" />
+      <button onclick="login()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl w-full">Login</button>
+      <p class="mt-4 text-center text-sm">Don't have an account? <a href="#" class="text-teal-700" onclick="showRegister()">Register here</a></p>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" class="hidden">
+      <h2 class="text-xl font-semibold text-teal-700 mb-2">Register</h2>
+      <input id="register-username" type="text" placeholder="Username" class="w-full mb-2 px-3 py-2 border rounded-xl" />
+      <input id="register-password" type="password" placeholder="Password" class="w-full mb-4 px-3 py-2 border rounded-xl" />
+      <button onclick="register()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl w-full">Register</button>
+      <p class="mt-4 text-center text-sm">Already have an account? <a href="#" class="text-teal-700" onclick="showLogin()">Login here</a></p>
+    </div>
+
+    <!-- Upload Form -->
+    <div id="upload-form" class="hidden">
+      <h2 class="text-xl font-semibold text-teal-700 mb-4">Upload Skin Image</h2>
+      <input id="file-upload" type="file" accept="image/*" class="w-full mb-4" onchange="previewImage(event)" />
+      <div class="flex justify-center mb-4">
+        <img id="preview" class="rounded-xl w-32 h-32 object-cover border" src="" alt="Preview will show here" />
+      </div>
+      <button onclick="uploadImage()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl w-full">Predict</button>
+
+      <div id="prediction-result" class="mt-6 hidden">
+        <h3 class="text-lg font-bold text-teal-800 mb-2">Prediction Result</h3>
+        <div class="bg-teal-50 border border-teal-200 rounded-xl p-4">
+          <p><strong>Disease:</strong> <span id="disease-name" class="text-rose-600 font-semibold"></span></p>
+          <p><strong>Medicine:</strong> <span id="medicine" class="text-gray-700"></span></p>
+          <p><strong>Doctor:</strong> <span id="doctor" class="text-gray-700"></span></p>
+          <p><strong>Result Image:</strong></p>
+          <img id="result-image" class="rounded-xl mt-2 w-32 h-32 object-cover border" src="" alt="Predicted" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => showLogin());
+
+    function showLogin() {
+      document.getElementById("login-form").classList.remove("hidden");
+      document.getElementById("register-form").classList.add("hidden");
+      document.getElementById("upload-form").classList.add("hidden");
+    }
+
+    function showRegister() {
+      document.getElementById("login-form").classList.add("hidden");
+      document.getElementById("register-form").classList.remove("hidden");
+      document.getElementById("upload-form").classList.add("hidden");
+    }
+
+    function showUpload() {
+      document.getElementById("login-form").classList.add("hidden");
+      document.getElementById("register-form").classList.add("hidden");
+      document.getElementById("upload-form").classList.remove("hidden");
+    }
+
+    function login() {
+      const username = document.getElementById("login-username").value;
+      const password = document.getElementById("login-password").value;
+      fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.message === "Login successful") {
+          showUpload();
+        } else {
+          alert("Invalid credentials");
+        }
+      });
+    }
+
+    function register() {
+      const username = document.getElementById("register-username").value;
+      const password = document.getElementById("register-password").value;
+      fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.message === "User registered successfully") {
+          alert("Registration successful! Please log in.");
+          showLogin();
+        } else {
+          alert("User already exists");
+        }
+      });
+    }
+
+    function previewImage(event) {
+      const preview = document.getElementById("preview");
+      preview.src = URL.createObjectURL(event.target.files[0]);
+    }
+
+    function uploadImage() {
+      const fileInput = document.getElementById("file-upload");
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      fetch("/upload", { method: "POST", body: formData })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("disease-name").textContent = data.disease;
+          document.getElementById("medicine").textContent = data.medicine;
+          document.getElementById("doctor").textContent = data.doctor;
+          document.getElementById("result-image").src = data.file_path;
+          document.getElementById("prediction-result").classList.remove("hidden");
+        });
+    }
+  </script>
+</body>
+</html>
