@@ -6,4 +6,4 @@ and efficient healthcare through intelligent, image-based skin disease diagnosis
 
 This system uses a deep learning model trained on labeled skin disease images to accurately classify 13 types of skin diseases. Once the prediction is made, the system also provides medicine suggestions and doctor consultation advice to guide the user.
 
-This project is build using flask framework and html,css,js is used to make it a profical and neat wed page.
+This project is build using flask framework and html,css,js is used to make it a proficial and neat wed page.
